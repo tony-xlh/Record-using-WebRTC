@@ -20,13 +20,13 @@
     <script>
     var video = document.querySelector('video');
     var cameraSelect = document.getElementById("select-camera");
-
+    var devices;
     window.onload = function(){
       listDevices();
     }
 
     async function listDevices(){
-      var devices = await getCameraDevices();
+      devices = await getCameraDevices()
       for (let index = 0; index < devices.length; index++) {
         const device = devices[index];
         cameraSelect.appendChild(new Option(device.label,device.deviceId));
@@ -53,7 +53,8 @@
         video:true
       }
       if (cameraSelect.selectedOptions[0]) {
-        var deviceID = cameraSelect.selectedOptions[0].value;
+        var device = devices[cameraSelect.selectedIndex];
+        var deviceID = device.deviceId;
         console.log(deviceID);
         constraints = {
           video: {deviceId: deviceID},
