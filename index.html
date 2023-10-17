@@ -10,64 +10,102 @@
   </head>
 
   <body>
-  
-<button id="btn-start-recording">Start Recording</button>
-<button id="btn-stop-recording" disabled>Stop Recording</button>
+    <select id="select-camera"></select>
+    <button id="btn-start-recording">Start Recording</button>
+    <button id="btn-stop-recording" disabled>Stop Recording</button>
+    <hr>
+    <video controls autoplay playsinline></video>
 
-<hr>
-<video controls autoplay playsinline></video>
+    <script src="/RecordRTC.js"></script>
+    <script>
+    var video = document.querySelector('video');
+    var cameraSelect = document.getElementById("select-camera");
 
-<script src="/RecordRTC.js"></script>
-<script>
-var video = document.querySelector('video');
+    window.onload = function(){
+      listDevices();
+    }
 
-function captureCamera(callback) {
-  navigator.mediaDevices.getUserMedia({ audio: false, video: true }).then(function(camera) {
-    //video.srcObject = camera;
-    callback(camera);
-  }).catch(function(error) {
-    alert('Unable to capture your camera. Please check console logs.');
-    console.error(error);
-  });
-}
+    async function listDevices(){
+      var devices = await getCameraDevices();
+      for (let index = 0; index < devices.length; index++) {
+        const device = devices[index];
+        cameraSelect.appendChild(new Option(device.label,device.deviceId));
+      }
+    }
 
-function stopRecordingCallback() {
-  video.src = video.srcObject = null;
-  video.muted = false;
-  video.volume = 1;
-  video.src = URL.createObjectURL(recorder.getBlob());
-  
-  recorder.camera.stop();
-  recorder.destroy();
-  recorder = null;
-}
+    async function getCameraDevices(){
+      var constraints = {video: true, audio: false};
+      var stream = await navigator.mediaDevices.getUserMedia(constraints);
+      var devices = await navigator.mediaDevices.enumerateDevices();
+      var cameraDevices = [];
+      for (var i=0;i<devices.length;i++){
+        var device = devices[i];
+        if (device.kind == 'videoinput'){
+          cameraDevices.push(device);
+        }
+      }
+      return cameraDevices;
+    }
 
-var recorder; // globally accessible
+    function captureCamera(callback) {
+      var constraints = {
+        audio:false,
+        video:true
+      }
+      if (cameraSelect.selectedOptions[0]) {
+        var deviceID = cameraSelect.selectedOptions[0].value;
+        console.log(deviceID);
+        constraints = {
+          video: {deviceId: deviceID},
+          audio: false
+        }
+      }
+      navigator.mediaDevices.getUserMedia(constraints).then(function(camera) {
+        //video.srcObject = camera;
+        callback(camera);
+      }).catch(function(error) {
+        alert('Unable to capture your camera. Please check console logs.');
+        console.error(error);
+      });
+    }
 
-document.getElementById('btn-start-recording').onclick = function() {
-  this.disabled = true;
-  captureCamera(function(camera) {
-    video.muted = true;
-    video.volume = 0;
-    video.srcObject = camera;
+    function stopRecordingCallback() {
+      video.src = video.srcObject = null;
+      video.muted = false;
+      video.volume = 1;
+      video.src = URL.createObjectURL(recorder.getBlob());
+      
+      recorder.camera.stop();
+      recorder.destroy();
+      recorder = null;
+    }
 
-    recorder = RecordRTC(camera, {
-      type: 'video'
-    });
+    var recorder; // globally accessible
 
-    recorder.startRecording();
+    document.getElementById('btn-start-recording').onclick = function() {
+      this.disabled = true;
+      captureCamera(function(camera) {
+      video.muted = true;
+      video.volume = 0;
+      video.srcObject = camera;
 
-    // release camera on stopRecording
-    recorder.camera = camera;
+      recorder = RecordRTC(camera, {
+        type: 'video'
+      });
 
-    document.getElementById('btn-stop-recording').disabled = false;
-  });
-};
+      recorder.startRecording();
 
-document.getElementById('btn-stop-recording').onclick = function() {
-  this.disabled = true;
-  recorder.stopRecording(stopRecordingCallback);
-};
-</script>
+      // release camera on stopRecording
+      recorder.camera = camera;
+
+      document.getElementById('btn-stop-recording').disabled = false;
+      });
+    };
+
+    document.getElementById('btn-stop-recording').onclick = function() {
+      this.disabled = true;
+      recorder.stopRecording(stopRecordingCallback);
+    };
+    </script>
   </body>
 </html>
