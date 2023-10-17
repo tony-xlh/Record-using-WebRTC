@@ -34,8 +34,7 @@
     }
 
     async function getCameraDevices(){
-      var constraints = {video: true, audio: false};
-      var stream = await navigator.mediaDevices.getUserMedia(constraints);
+      await askForPermissions();
       var devices = await navigator.mediaDevices.enumerateDevices();
       var cameraDevices = [];
       for (var i=0;i<devices.length;i++){
@@ -45,6 +44,17 @@
         }
       }
       return cameraDevices;
+    }
+
+    async function askForPermissions(){
+      try {
+        var constraints = {video: true, audio: true}; //ask for camera and microphone permission
+        var stream = await navigator.mediaDevices.getUserMedia(constraints);  
+      } catch (error) {
+        console.log(error);
+        var constraints = {video: true, audio: false}; //ask for camera permission only
+        var stream = await navigator.mediaDevices.getUserMedia(constraints);  
+      }
     }
 
     function captureCamera(callback) {
