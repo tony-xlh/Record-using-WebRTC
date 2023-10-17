@@ -47,13 +47,25 @@
     }
 
     async function askForPermissions(){
+      var stream;
       try {
         var constraints = {video: true, audio: true}; //ask for camera and microphone permission
-        var stream = await navigator.mediaDevices.getUserMedia(constraints);  
+        stream = await navigator.mediaDevices.getUserMedia(constraints);  
       } catch (error) {
         console.log(error);
         var constraints = {video: true, audio: false}; //ask for camera permission only
-        var stream = await navigator.mediaDevices.getUserMedia(constraints);  
+        stream = await navigator.mediaDevices.getUserMedia(constraints);  
+      }
+      closeStream(stream);
+    }
+
+    function closeStream(stream){
+      try{
+        if (stream){
+          stream.getTracks().forEach(track => track.stop());
+        }
+      } catch (e){
+        alert(e.message);
       }
     }
 
