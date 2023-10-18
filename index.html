@@ -10,6 +10,28 @@
       video {
         max-width: 100%;
       }
+
+      #video-container {
+        position: relative;
+      }
+
+      .absolute {
+        position: absolute;
+        top: 0px;
+        left: 0px;
+      }
+
+      .barcode-polygon {
+        fill:rgba(85,240,40,0);          
+        stroke:green;
+        stroke-width:5;
+      }
+          
+      .barcode-polygon:hover {
+        fill:rgba(85,240,40,0.5);
+        stroke:green;
+        stroke-width:5;
+      }
     </style>
   </head>
 
@@ -21,14 +43,19 @@
       <option>1920x1080</option>
       <option>3840x2160</option>
     </select>
+    
     <button id="btn-start-recording">Start Recording</button>
     <button id="btn-stop-recording" disabled>Stop Recording</button>
     <hr>
-    <video controls autoplay playsinline></video>
-
+    <div id="video-container">
+      <video class="absolute" controls autoplay playsinline></video>
+      <svg class="absolute" id="overlay" version="1.1" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    
     <script src="RecordRTC.js"></script>
     <script>
     var video = document.querySelector('video');
+    var overlay = document.getElementById("overlay");
     var cameraSelect = document.getElementById("select-camera");
     var resolutionSelect = document.getElementById("select-resolution");
     var devices;
@@ -41,12 +68,20 @@
       initDBR();
     }
 
+    video.onloadeddata = function(){
+      overlay.setAttribute("width",video.clientWidth);
+      overlay.setAttribute("height",video.clientHeight);
+      overlay.setAttribute("viewBox","0 0 "+video.videoWidth+" "+video.videoHeight);
+    }
+
     function startScanning(){
       stopScanning();
+      overlay.style.display = "";
       interval = setInterval(captureAndDecode,200);
     }
 
     function stopScanning(){
+      overlay.style.display = "none";
       if (interval) {
         clearInterval(interval);
       }
@@ -57,11 +92,12 @@
       if (decoding === false) {
         decoding = true;
         try {
-          var results = await scanner.decode(video);  
+          var results = await scanner.decode(video);
+          drawOverlay(results);
+          console.log(results);
         } catch (error) {
-          
+          console.log(error);
         }
-        console.log(results);
         decoding = false;
       }
     }
@@ -147,6 +183,29 @@
         alert('Unable to capture your camera. Please check console logs.');
         console.error(error);
       });
+    }
+
+    function drawOverlay(results){
+      overlay.innerHTML = "";
+      for (let index = 0; index < results.length; index++) {
+        const result = results[index];
+        var points = getPointsData(result.localizationResult);
+        var polygon = document.createElementNS("http://www.w3.org/2000/svg","polygon");
+        polygon.setAttribute("points",points);
+        polygon.setAttribute("class","barcode-polygon");
+        var title = document.createElementNS("http://www.w3.org/2000/svg","title");
+        title.textContent = result.barcodeText;
+        polygon.append(title);
+        overlay.append(polygon);
+      }
+    }
+
+    function getPointsData(lr){
+        var pointsData = lr.x1+","+lr.y1 + " ";
+        pointsData = pointsData+ lr.x2+","+lr.y2 + " ";
+        pointsData = pointsData+ lr.x3+","+lr.y3 + " ";
+        pointsData = pointsData+ lr.x4+","+lr.y4;
+        return pointsData;
     }
 
     function stopRecordingCallback() {
