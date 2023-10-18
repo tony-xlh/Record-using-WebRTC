@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <title>RecordRTC Simple Demos</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <style>
-    video {
-      max-width: 100%;
-    }
-  </style>
+    <title>RecordRTC Simple Demos</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://cdn.jsdelivr.net/npm/dynamsoft-javascript-barcode@9.6.31/dist/dbr.js"></script>
+    <style>
+      video {
+        max-width: 100%;
+      }
+    </style>
   </head>
 
   <body>
@@ -25,8 +26,15 @@
     var cameraSelect = document.getElementById("select-camera");
     var devices;
     var hasMicrophone = true;
+    var scanner;
     window.onload = function(){
       listDevices();
+      initDBR();
+    }
+
+    async function initDBR(){
+      Dynamsoft.DBR.BarcodeScanner.license = 'DLS2eyJoYW5kc2hha2VDb2RlIjoiMjAwMDAxLTE2NDk4Mjk3OTI2MzUiLCJvcmdhbml6YXRpb25JRCI6IjIwMDAwMSIsInNlc3Npb25QYXNzd29yZCI6IndTcGR6Vm05WDJrcEQ5YUoifQ=='; //one-day public trial
+      scanner = await Dynamsoft.DBR.BarcodeScanner.createInstance();
     }
 
     async function listDevices(){
