@@ -46,6 +46,10 @@
     
     <button id="btn-start-recording">Start Recording</button>
     <button id="btn-stop-recording" disabled>Stop Recording</button>
+    <label>
+      Stop after reading a barcode
+      <input checked type="checkbox" id="chk-stop-after-decoding" value="true"/>
+    </label>
     <hr>
     <div id="video-container">
       <video class="absolute" controls autoplay playsinline></video>
@@ -94,7 +98,11 @@
         try {
           var results = await scanner.decode(video);
           drawOverlay(results);
-          console.log(results);
+          if (document.getElementById("chk-stop-after-decoding").checked) {
+            if (results.length>0) {
+              stopRecording();
+            }
+          }
         } catch (error) {
           console.log(error);
         }
@@ -242,11 +250,15 @@
     };
 
     document.getElementById('btn-stop-recording').onclick = function() {
+      stopRecording();
+    };
+
+    function stopRecording(){
       stopScanning();
-      this.disabled = true;
+      document.getElementById('btn-stop-recording').disabled = true;
       document.getElementById('btn-start-recording').disabled = false;
       recorder.stopRecording(stopRecordingCallback);
-    };
+    }
     </script>
   </body>
 </html>
