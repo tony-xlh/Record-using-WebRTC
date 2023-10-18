@@ -27,9 +27,36 @@
     var devices;
     var hasMicrophone = true;
     var scanner;
+    var interval;
+    var decoding = false;
     window.onload = function(){
       listDevices();
       initDBR();
+    }
+
+    function startScanning(){
+      stopScanning();
+      interval = setInterval(captureAndDecode,200);
+    }
+
+    function stopScanning(){
+      if (interval) {
+        clearInterval(interval);
+      }
+      decoding = false;
+    }
+
+    async function captureAndDecode(){
+      if (decoding === false) {
+        decoding = true;
+        try {
+          var results = await scanner.decode(video);  
+        } catch (error) {
+          
+        }
+        console.log(results);
+        decoding = false;
+      }
     }
 
     async function initDBR(){
@@ -124,7 +151,7 @@
       video.muted = true;
       video.volume = 0;
       video.srcObject = camera;
-
+      startScanning();
       recorder = RecordRTC(camera, {
         type: 'video'
       });
@@ -139,7 +166,9 @@
     };
 
     document.getElementById('btn-stop-recording').onclick = function() {
+      stopScanning();
       this.disabled = true;
+      document.getElementById('btn-start-recording').disabled = false;
       recorder.stopRecording(stopRecordingCallback);
     };
     </script>
