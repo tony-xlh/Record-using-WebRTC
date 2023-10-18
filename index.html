@@ -15,6 +15,12 @@
 
   <body>
     <select id="select-camera"></select>
+    <select id="select-resolution">
+      <option selected>640x480</option>
+      <option>1280x720</option>
+      <option>1920x1080</option>
+      <option>3840x2160</option>
+    </select>
     <button id="btn-start-recording">Start Recording</button>
     <button id="btn-stop-recording" disabled>Stop Recording</button>
     <hr>
@@ -24,6 +30,7 @@
     <script>
     var video = document.querySelector('video');
     var cameraSelect = document.getElementById("select-camera");
+    var resolutionSelect = document.getElementById("select-resolution");
     var devices;
     var hasMicrophone = true;
     var scanner;
@@ -121,6 +128,16 @@
         constraints = {
           video: {deviceId: deviceID},
           audio: hasMicrophone
+        }
+      }
+      if (resolutionSelect.selectedOptions[0]) {
+        let desiredWidth = resolutionSelect.selectedOptions[0].label.split("x")[0];
+        let desiredHeight = resolutionSelect.selectedOptions[0].label.split("x")[1];
+        if (constraints["video"]["deviceId"]) {
+          constraints["video"]["width"] = desiredWidth;
+          constraints["video"]["height"] = desiredHeight;
+        }else{
+          constraints = {width:desiredWidth,height:desiredHeight};
         }
       }
       navigator.mediaDevices.getUserMedia(constraints).then(function(camera) {
