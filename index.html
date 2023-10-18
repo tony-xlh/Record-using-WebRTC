@@ -55,7 +55,7 @@
       <video class="absolute" controls autoplay playsinline></video>
       <svg class="absolute" id="overlay" version="1.1" xmlns="http://www.w3.org/2000/svg"></svg>
     </div>
-    
+    <button id="btn-download">Download</button>
     <script src="RecordRTC.js"></script>
     <script>
     var video = document.querySelector('video');
@@ -73,6 +73,7 @@
     }
 
     video.onloadeddata = function(){
+      document.getElementById("video-container").style.height = video.clientHeight + "px";
       overlay.setAttribute("width",video.clientWidth);
       overlay.setAttribute("height",video.clientHeight);
       overlay.setAttribute("viewBox","0 0 "+video.videoWidth+" "+video.videoHeight);
@@ -88,6 +89,7 @@
       overlay.style.display = "none";
       if (interval) {
         clearInterval(interval);
+        interval = undefined;
       }
       decoding = false;
     }
@@ -259,6 +261,16 @@
       document.getElementById('btn-start-recording').disabled = false;
       recorder.stopRecording(stopRecordingCallback);
     }
+
+    document.getElementById("btn-download").onclick = function() {
+      if (!interval) {
+        var a = document.createElement("a");
+        a.href = video.src;
+        document.body.appendChild(a);
+        a.click();
+        a.remove()
+      }
+    };
     </script>
   </body>
 </html>
